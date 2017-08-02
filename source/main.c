@@ -1,91 +1,83 @@
 /*
- * TinyFormat v1.0
- * javiMaD
- *
+ * TinyFormat v1.1
+ * javiMaD & CaptainSwag101
  */
 
 #include <stdio.h>
 #include <string.h>
 #include <3ds.h>
+#include <3ds/services/apt.h>
+#include <3ds/services/fs.h>
+#include <3ds/services/hid.h>
+#include <3ds/srv.h>
 
-Result
-FS_InitializeCtrFileSystem(Handle handle)
-{
-	u32 *cmdbuf = getThreadCommandBuffer();
-
-	cmdbuf[0] = 0x08430000;
-
-	Result ret = 0;
-	if((ret = svcSendSyncRequest(handle)))
-		return ret;
-
-	ret = cmdbuf[1];
-	return ret;
-}
 
 int main(int argc, char** argv)
 {
-	// Initialize services
-	gfxInitDefault();
-	aptInit();
-	fsInit();
+    // Initialize services
+    gfxInitDefault(); //makes displaying to screen easier
+    
+    aptInit();
+    fsInit();
+    //hidInit();
 
-	Result res;
+    Result res;
 
-	// Init console for text output
-	consoleInit(GFX_BOTTOM, NULL);
+    // Init console for text output
+    consoleInit(GFX_BOTTOM, NULL);
 
-	printf("TinyFormat\n");
-	printf("----------\n\n");
-	printf("Press START to exit.\n");
-	printf("Press Y to start.\n\n");
-	
-	// Main loop
-	while (aptMainLoop())
-	{
-		hidScanInput();
+    printf("TinyFormat v1.1\n");
+    printf("---------------\n\n");
+    printf("Press Y to format.\n");
+    printf("Press START to exit.\n\n");
 
-		u32 kDown = hidKeysDown();
-		if (kDown & KEY_START)
-		{
-			printf("CANCEL! Exiting...\n");
-			break;
-		}
-		else if (kDown & KEY_Y)
-		{ 
-			printf("ALL YOUR DATA WILL BE DELETED (except on SD Card)\n")
-		        printf("Press again Y format system , START to exit\n")
-			if (kDown & KEY_START)
-			{
-				printf("CANCEL! Exiting...\n");
-				break;
-			}
-			else if (kDown & KEY_Y)
-			{ 
-				printf("InitializeCtrFileSystem. Please wait...\n");
-				res = FS_InitializeCtrFileSystem( *(fsGetSessionHandle()) );
-				if (res == 0)
-				printf("Done!\n");
-				else
-				printf("FAILED!\n");
+    // Main loop
+    while (aptMainLoop())
+    {
+        hidScanInput();
 
-				printf("Wait for system reboot...\n");
-				svcSleepThread(3000000000);
-				aptOpenSession();
-				APT_HardwareResetAsync(NULL);
-				aptCloseSession();
-			}
-		}
+        if (hidKeysDown() & KEY_START)
+        {
+            printf("CANCELED! Exiting...\n");
+            break;
+        }
+        else if (hidKeysDown() & KEY_Y)
+        { 
+            printf("ALL YOUR DATA WILL BE DELETED (except on SD Card)!\n");
+            printf("Press Y again to format your system, or START to exit.\n");
+            if (hidKeysDown() & KEY_START)
+            {
+                printf("CANCELED! Exiting...\n");
+                break;
+            }
+            else if (hidKeysDown() & KEY_Y)
+            { 
+                printf("Running InitializeCtrFileSystem. Please wait...\n");
+                //fsUseSession(fsGetSessionHandle());
+                res = FSUSER_InitializeCtrFileSystem();
+                //fsEndUseSession();
+                
+                if (res == 0)
+                    printf("Done!\n");
+                else
+                    printf("FAILED!\n");
 
-		// Flush and swap framebuffers
-		gfxFlushBuffers();
-		gfxSwapBuffers();
-		gspWaitForVBlank();
-	}
+                printf("Waiting for system reboot...\n");
+                svcSleepThread(3000000000);
+                APT_HardwareResetAsync();
+            }
+        }
 
-	// Exit services
-	fsExit();
-	aptExit();
-	gfxExit();
-	return 0;
+        // Flush and swap framebuffers
+        gfxFlushBuffers();
+        gfxSwapBuffers();
+        gspWaitForVBlank();
+    }
+
+    // Exit services
+    //hidExit();
+    fsExit();
+    aptExit();
+    gfxExit();
+    return 0;
 }
