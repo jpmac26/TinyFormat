@@ -2,7 +2,7 @@ TARGET := 3DS
 LIBRARY := 0
 
 ifeq ($(strip $(DEVKITPRO)),)
-$(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>devkitPro")
+$(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path/to/devkitPro>")
 endif
 
 
@@ -16,7 +16,7 @@ SOURCE_DIRS := source
 LIBRARY_DIRS :=
 LIBRARIES :=
 
-BUILD_FLAGS := -Wno-misleading-indentation -Wno-strict-aliasing
+BUILD_FLAGS := -Wall
 BUILD_FLAGS_CC :=
 BUILD_FLAGS_CXX :=
 RUN_FLAGS :=
@@ -28,14 +28,14 @@ VERSION_MINOR := $(word 2, $(VERSION_PARTS))
 VERSION_MICRO := $(word 3, $(VERSION_PARTS))
 
 TITLE := $(NAME)
-DESCRIPTION := A small utility to format Sys/EmuNAND but not SD card.
-AUTHOR := javiMaD
+DESCRIPTION := A small utility to format Sys/EmuNAND.
+AUTHOR := javiMaD/CaptainSwag101
 
 LIBRARY_DIRS += $(DEVKITPRO)/libctru
 LIBRARIES += ctru
 
 PRODUCT_CODE := CTR-P-TNYF
-UNIQUE_ID := 0xF8001
+UNIQUE_ID := 0xD8317
 
 CATEGORY := Application
 USE_ON_SD := true

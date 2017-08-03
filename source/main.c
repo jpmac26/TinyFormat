@@ -15,12 +15,11 @@
 int main(int argc, char** argv)
 {
     // Initialize services
-    gfxInitDefault(); //makes displaying to screen easier
-    
+    gfxInitDefault();
     aptInit();
     fsInit();
-    //hidInit();
 
+    bool confirming = false;
     Result res;
 
     // Init console for text output
@@ -42,9 +41,16 @@ int main(int argc, char** argv)
             break;
         }
         else if (hidKeysDown() & KEY_Y)
-        { 
-            printf("ALL YOUR DATA WILL BE DELETED (except on SD Card)!\n");
-            printf("Press Y again to format your system, or START to exit.\n");
+        {
+            confirming = true;
+            continue;
+        }
+        
+        if (confirming)
+        {
+            printf("Are you sure? ALL YOUR DATA WILL BE DELETED!\n");
+            printf("Press Y again to confirm, or START to exit.\n\n");
+            
             if (hidKeysDown() & KEY_START)
             {
                 printf("CANCELED! Exiting...\n");
@@ -52,17 +58,15 @@ int main(int argc, char** argv)
             }
             else if (hidKeysDown() & KEY_Y)
             { 
-                printf("Running InitializeCtrFileSystem. Please wait...\n");
-                //fsUseSession(fsGetSessionHandle());
+                printf("Initializing CTRNAND. Please wait...\n");
                 res = FSUSER_InitializeCtrFileSystem();
-                //fsEndUseSession();
                 
                 if (res == 0)
                     printf("Done!\n");
                 else
                     printf("FAILED!\n");
 
-                printf("Waiting for system reboot...\n");
+                printf("The system will reboot in 3 seconds...\n");
                 svcSleepThread(3000000000);
                 APT_HardwareResetAsync();
             }
@@ -75,7 +79,6 @@ int main(int argc, char** argv)
     }
 
     // Exit services
-    //hidExit();
     fsExit();
     aptExit();
     gfxExit();
